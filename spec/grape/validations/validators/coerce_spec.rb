@@ -294,6 +294,36 @@ describe Grape::Validations::CoerceValidator do
         end
       end
 
+      context 'documented types' do
+        TYPES = [
+          [Integer, 1],
+          [Float, 1.5],
+          [BigDecimal, 1.5],
+          [Numeric, 1.5],
+          [Date, Date.today,],
+          [DateTime, DateTime.now,],
+          [Time, Time.now],
+          # [Boolean, true],
+          [String, "string"],
+          [Symbol, :symbol],
+        ]
+
+        TYPES.each do |(type, value)|
+          it "allows params of type #{type.name}" do
+            subject.params do
+              requires :parameter, type: type
+            end
+
+            subject.get '/param' do
+              declared(params).to_json
+            end
+
+            get '/param', { parameter: value }
+            expect(last_response.status).to eq(200)
+          end
+        end
+      end
+
       it 'Boolean' do
         subject.params do
           requires :boolean, type: Boolean
